@@ -1,6 +1,6 @@
-  ## \file graphics.py
-  #
-  #  This file contains classes working with graphics.
+## \file graphics.py
+#
+#  This file contains classes working with graphics.
 
 import os
 import pygame
@@ -12,17 +12,17 @@ import random
 
 #=======================================================================
 
-  ## Holds images (i.e. main tile variations, corners etc.) of a game
-  # (terrain) tile, the corners are represented by a string in following
-  # format: cornar_AB_XY, where A is U or D (up, down), B is L or R
-  # (left, right) and X and Y are either 0 (opposite not present) or 1
-  # (opposite present).
-  # For example if there is a part of terrain as follows:
-  #   0 1
-  # 0 K L
-  # 1 K L
-  # then for example in the upper left corner of L at [1,1] there should
-  # be drawn a corner of K with identifier corner_UL_01.
+## Holds images (i.e. main tile variations, corners etc.) of a game
+# (terrain) tile, the corners are represented by a string in following
+# format: cornar_AB_XY, where A is U or D (up, down), B is L or R
+# (left, right) and X and Y are either 0 (opposite not present) or 1
+# (opposite present).
+# For example if there is a part of terrain as follows:
+#   0 1
+# 0 K L
+# 1 K L
+# then for example in the upper left corner of L at [1,1] there should
+# be drawn a corner of K with identifier corner_UL_01.
 
 class TileImageContainer:
   def init(self):
@@ -78,7 +78,7 @@ class TileImageContainer:
 
 #=======================================================================
 
-  ## Assembles images out of image resources.
+## Assembles images out of image resources.
 
 class ImageCompositor:
 
@@ -201,7 +201,7 @@ class ImageCompositor:
           tile_id = tile_type.get_identifier()
 
           if not (tile_id in tile_pictures):  # lazy image loading
-            tile_pictures[tile_id] = TileImageContainer(os.path.join(general.RESOURCE_PATH,tile_type.get_filename()))
+            tile_pictures[tile_id] = TileImageContainer(os.path.join(general.RESOURCE_PATH,"tile_" + tile_type.get_name() + ".png"))
 
           # draw the main tile:
           result_image.blit(tile_pictures[tile_id].main_tile[variant],(i * general.TILE_WIDTH,j * general.TILE_HEIGHT))
@@ -318,22 +318,22 @@ imgs.append(myyy.make_character_image(general.RACE_HUMAN,general.GENDER_MALE,2,g
 imgs.append(myyy.make_character_image(general.RACE_HUMAN,general.GENDER_MALE,2,general.ANIMATION_IDLE_LEFT,1))
 imgs.append(myyy.make_character_image(general.RACE_HUMAN,general.GENDER_MALE,2,general.ANIMATION_IDLE_UP,1))
 
-tile1 = world.TileType(1,"tile_grass.png")
-tile2 = world.TileType(2,"tile_snow.png")
+tile1 = world.TileType(1,"grass")
+tile2 = world.TileType(2,"snow")
 
 print(tile1.get_identifier())
 print(tile2.get_identifier())
 
-ter_array = world.TerrainArray(12,10)
+ter_array = world.WorldArea(12,10)
 
 for j in range(10):
   for i in range(12):
     number = random.randint(0,2)
 
     if number == 0:
-      ter_array.set_tile(i,j,tile1,0)
+      ter_array.set_tile(i,j,tile1,0,None)
     elif number == 1:
-      ter_array.set_tile(i,j,tile2,0)
+      ter_array.set_tile(i,j,tile2,0,None)
 
 #ter_array.set_tile(2,1,tile1,0)
 #ter_array.set_tile(3,1,tile1,0)

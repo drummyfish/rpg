@@ -1,0 +1,22 @@
+items:
+end
+
+npcs:
+end
+
+tiles:
+0 "grass" 10 3 F T T
+1 "water" 0  4 T F T
+2 "road"  5  3 F T T
+end
+
+terrain:
+5
+3
+1 1 0 2 1 1 1 0 2 1 0 0 2 2 2
+end
+
+interiors:
+0 "cavern" 3 2 3 3 3 3 3 3
+1 "cavern 2" 2 4 3 3 3 3 3 3 3 3
+end

@@ -1,6 +1,6 @@
-  ## \file general.py
-  #  this file contains general constants and general helper classes and
-  #  functions
+## \file general.py
+#  this file contains general constants and general helper classes and
+#  functions
 
 from enum import Enum
 import pygame

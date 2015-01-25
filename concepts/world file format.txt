@@ -1,8 +1,14 @@
+The deafault world will be in resources directory, the save files (modified
+world files) will be in separate save folder.
+
 There will be sections, like terrains, npcs, tiles etc. Each sections looks like this:
 
 section_name
 data_lines
 end
+
+These sections can be in any order and some of them can even be missing but there must
+not be one sections more than once.
 
 data_lines is a variable number of lines of definitions.
 
@@ -23,6 +29,10 @@ terrain - world terrain definition, the first data line is width, the second one
   height and the third one contains the terrain data, which consist of id numbers of
   tiles separated by spaces
 
+interiors - defines interiors, each data line looks like this:
+  id_int name_string width_int height_int tile_data
+  tile_data is the same as the terrain tile data
+
 items - item definitions
 
 objects - object definitions
@@ -32,16 +42,17 @@ EXAMPLE:
 ======================================
 
 
+items:
+end
+
 npcs:
-
-
-
-
+end
 
 tiles:
 0 "grass" 10 3 F T T
 1 "water" 0  4 T F T
 2 "road"  5  3 F T T
+3 "rock"  9  4 F T T
 end
 
 terrain:
@@ -50,3 +61,7 @@ terrain:
 1 1 1 1 2 1 1 0 2 2 0 0 0 2 0
 end
 
+interiors:
+0 "cavern" 3 2 3 3 3 3 3 3
+1 "cavern 2" 2 4 3 3 3 3 3 3 3 3
+end
