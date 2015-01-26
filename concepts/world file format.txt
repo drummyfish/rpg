@@ -17,17 +17,17 @@ The sections are:
 npcs - NPC definitions
 
 tiles - world tiles definition, the data lines look like this:
-  id_int name_string priority_int variants_int animated_bool steppable_bool flyable_bool 
+  id_int name_string priority_int variants_int animated_bool steppable_bool flyable_bool swimmable_bool
 
   id_int is unique integer id, name_string is the tile name, priority_int is integer
   priority which affects the tile overlapping, variants_int is the number of tile
   variants (if the tile is not animated) or number of frames (if the tile is animated),
   animated_bool says if the tile is animated (T or F), steppable_bool says if the tile
-  is steppable (T or F) and flyable says if the tile can be flight over (T or F)
+  is steppable (T or F) and flyable says if the tile can be flight over (T or F),
+  similarly swimmable_bool
 
 terrain - world terrain definition, the first data line is width, the second one is
-  height and the third one contains the terrain data, which consist of id numbers of
-  tiles separated by spaces
+  height and the the following lines represent lines of the terrain (tile type ids)
 
 interiors - defines interiors, each data line looks like this:
   id_int name_string width_int height_int tile_data
@@ -49,16 +49,18 @@ npcs:
 end
 
 tiles:
-0 "grass" 10 3 F T T
-1 "water" 0  4 T F T
-2 "road"  5  3 F T T
-3 "rock"  9  4 F T T
+0 "grass" 10 3 F T T F
+1 "water" 0  4 T F T T
+2 "road"  5  3 F T T F
+3 "rock"  9  4 F T T F
 end
 
 terrain:
 5
 3
-1 1 1 1 2 1 1 0 2 2 0 0 0 2 0
+1 1 1 1 2
+1 1 0 2 2
+0 0 0 2 0
 end
 
 interiors:

@@ -17,40 +17,57 @@ import numpy
 class TileType:
   last_identifier = 0
 
-  def init(self):
+  ## Private method, initialises the default attribute values
+
+  def __init_attributes(self):
+    ## tile with higher priority will overlap the tile with lower
+    #  priority at their borders
     self.priority = 0
+    ## tile name
     self.name = ""
+    ## whether the tile is animated
+    self.animated = False
+    ## number of tile variants in range <1,4>
+    self.variants = 1
+    ## whether the tile is steppable
+    self.steppable = True
+    ## whether the tile can be flied over
+    self.flyable = True
+    ## whether the tile can be swimmed on
+    self.swimmable = False
+    ## unique tile identifier
     self.identifier = TileType.last_identifier
     TileType.last_identifier += 1
 
   def __init__(self):
-    self.init()
+    self.__init_attributes()
 
   ## Initialises a new object with given attribute values.
   #
   #  @param priority integer tile priority, this affects how the tiles
   #         overlap
-  #  @param name name of the image for the tile, only the image
-  #         name must be given without a path to it, for example:
-  #         "grass.png"
+  #  @param name name of the the tile, it is not a filename, so only  a
+  #         name must be given without a path to it or a file extension,
+  #         for example: "grass"
+  #  @param variants number of tile variants (if not animated) or
+  #         animation frames (if animated), must be integer in range
+  #         <1,4>
+  #  @param steppable whether the tile can be stepped on (bool)
+  #  @param flyable whether the tile can be flied over (bool)
+  #  @param swimmable whether the tile can be swimmed on (bool)
 
-  def __init__(self, priority, name):
-    self.init()
+  def __init__(self, priority = 0, name = "", steppable = True, variants = 1, animated = False, flyable = True, swimmable = False):
+    self.__init_attributes()
     self.priority = priority
+    self.steppable = steppable
+    self.variant = variants
+    self.animated = animated
+    self.flyable = flyable
     self.name = name
+    self.swimmable = swimmable
 
-  def get_priority(self):
-    return self.priority
-
-  def get_name(self):
-    return self.name
-
-  ## Gets the tile unique integer identifier.
-  #
-  #  @return unique integer identifier
-
-  def get_identifier(self):
-    return self.identifier
+  def __str__(self):
+    return "Tile: '" + self.name + "' (" + str(self.identifier) + "), prior.: " + str(self.priority) + ", step.: " + str(self.steppable) + ", fly.: " + str(self.flyable) + ", swim.: " + str(self.swimmable)
 
 #=======================================================================
 
@@ -60,8 +77,8 @@ class TileType:
 
 class WorldArea:
   def __init__(self, width, height):
-    #initialize the terrain array, it's format is [x][y][tiletype(int),]:
 
+    ## the terrain array, it's format is [x][y][tiletype,variant,object_list]:
     self.terrain_array = numpy.zeros((width,height),dtype=object)
 
     for j in range(len(self.terrain_array[0])):
@@ -70,10 +87,16 @@ class WorldArea:
 
     #self.terrain_array = [[[None,0,None] for i in range(height)] for j in range(width)]
 
-  def get_width(self):
+  ## the area width in tiles
+
+  @property
+  def width(self):
     return len(self.terrain_array)
 
-  def get_height(self):
+  ## the area height in tiles
+
+  @property
+  def height(self):
     return len(self.terrain_array[0])
 
   ## Sets the tile at given position. If the position is outside the
@@ -83,6 +106,7 @@ class WorldArea:
     try:
       self.terrain_array[x][y][0] = tile_type
       self.terrain_array[x][y][1] = variant
+      self.terrain_array[x][y][2] = object_list
     except IndexError:
       return
 
@@ -128,7 +152,9 @@ class WorldArea:
 class TileInfo:
 
   def __init__(self, tile_type, game_object_list):
+    ## type of the tile
     self.tile_type = tile_type
+    ## objects at the tile
     self.objects = game_object_list
 
 #=======================================================================
@@ -146,22 +172,46 @@ class World:
   #  terrain, this is done with __load_active_terrain().
 
   def __load_non_terrain(self):
+    world_file = open(self.filename,'r')
+
+    for line in world_file:
+
+      if line[:6] == "tiles:":       # load tiles
+        while True:
+          line2 = world_file.readline()
+
+          if line2[:3] == "end":
+            break
+
+          split_line = line2.split()
+
+          print(split_line)
+
+          self.tile_types.append(TileType(int(split_line[2]),split_line[1],split_line[5] == "T",int(split_line[3]),split_line[4] == "T",split_line[6] == "T",split_line[7] == "T"))
+
+    world_file.close()
     return
 
   ## Private method, loads the active terrain area from the world file.
 
   def __load_active_terrain(self):
-
-
     return
 
   ## Private method, initialises the default attribute values
 
   def __init_attributes(self):
+    ## contains the name of the world file for which the object is a proxy
+    self.filename = ""
+    ## active world (player's close) area in format (x,y,width,height) in tiles
     self.active_area = (0, 0, 0, 0)
+    ## WorldArea object reference
     self.world_area = None
-    self.width = 0
-    self.height = 0
+    ## all world tile types loaded from the world file
+    self.tile_types = []
+    ## world width in tiles
+    self.world_width = 0
+    ## world height in tiles
+    self.world_height = 0
 
   ## Initialises a new world proxy for given world file.
   #
@@ -170,22 +220,17 @@ class World:
 
   def __init__(self, filename):
     self.__init_attributes()
+    self.filename = filename
     self.__load_non_terrain()
     self.__load_active_terrain()
 
-  ## Gets the world outdoor width.
-  #
-  #  @return width in tiles
+  @property
+  def width(self):
+    return self.world_width
 
-  def get_width(self):
-    return self.width
-
-  ## Gets the world outdoor height.
-  #
-  #  @return height in tiles
-
-  def get_height(self):
-    return self.height
+  @property
+  def height(self):
+    return self.world_height
 
   ## Sets the active area of the world (the player's close area which
   #  can then be handled in a detailed way).
@@ -201,25 +246,8 @@ class World:
     self.active_area = (x, y, width, height)
     self.__load_active_terrain()
 
-  ## Gets the tile type at given position of the active area.
-  #
-  #  @param x x coordinate inside the active_area
-  #  @param y y coordinate inside the active_area
-  #  @return TileType object representing the tile type, or none if
-  #          there was no file at given position or the coordinates
-  #          were out of the world
+t1 = TileType()
+print(t1)
 
-  def get_tile_type(self, x, y):
-    return
+w = World(general.RESOURCE_PATH + "/world")
 
-  ## Makes a terrain array out of the world active area.
-  #
-  #  @return terrain array representing the active area
-
-  def get_terrain_array(self):
-    return
-
-  ## debug purposes method
-
-  def print_active_area(self):
-    return
