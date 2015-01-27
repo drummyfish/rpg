@@ -149,7 +149,7 @@ class ImageCompositor:
 
   def __tile_priority(self, tile_type):
     try:
-      return tile_type.get_priority()
+      return tile_type.priority
     except Exception:
       return 0
 
@@ -161,8 +161,8 @@ class ImageCompositor:
   def __make_tile_priority_list(self, terrain_array):
     result = []
 
-    for j in range(terrain_array.get_height()):
-      for i in range(terrain_array.get_width()):
+    for j in range(terrain_array.height):
+      for i in range(terrain_array.width):
         priority = self.__tile_priority(terrain_array.get_tile_type(i,j))
 
         if not priority in result:
@@ -178,30 +178,29 @@ class ImageCompositor:
   #  @return Surface object - the generated image
 
   def make_terrain_image(self, terrain_array):
-    result_image = pygame.Surface((terrain_array.get_width() * general.TILE_WIDTH, terrain_array.get_height() * general.TILE_HEIGHT))
+    result_image = pygame.Surface((terrain_array.width * general.TILE_WIDTH, terrain_array.height * general.TILE_HEIGHT))
     result_image.fill((255,255,255,0))
 
     tile_pictures = {}
 
     for current_priority in self.__make_tile_priority_list(terrain_array):      # draw the terrain in layers
-
-      for j in range(terrain_array.get_height()):
-        for i in range(terrain_array.get_width()):
+      for j in range(terrain_array.height):
+        for i in range(terrain_array.width):
           tile_type = terrain_array.get_tile_type(i,j)
 
           if tile_type == None:
             continue
 
-          tile_priority = tile_type.get_priority()
+          tile_priority = tile_type.priority
 
-          if not tile_priority == current_priority:   # only draw one priority at a time
+          if tile_priority != current_priority:   # only draw one priority at a time
             continue
 
           variant = terrain_array.get_tile_variant(i,j)
-          tile_id = tile_type.get_identifier()
+          tile_id = tile_type.identifier
 
           if not (tile_id in tile_pictures):  # lazy image loading
-            tile_pictures[tile_id] = TileImageContainer(os.path.join(general.RESOURCE_PATH,"tile_" + tile_type.get_name() + ".png"))
+            tile_pictures[tile_id] = TileImageContainer(os.path.join(general.RESOURCE_PATH,"tile_" + tile_type.name + ".png"))
 
           # draw the main tile:
           result_image.blit(tile_pictures[tile_id].main_tile[variant],(i * general.TILE_WIDTH,j * general.TILE_HEIGHT))
@@ -318,40 +317,10 @@ imgs.append(myyy.make_character_image(general.RACE_HUMAN,general.GENDER_MALE,2,g
 imgs.append(myyy.make_character_image(general.RACE_HUMAN,general.GENDER_MALE,2,general.ANIMATION_IDLE_LEFT,1))
 imgs.append(myyy.make_character_image(general.RACE_HUMAN,general.GENDER_MALE,2,general.ANIMATION_IDLE_UP,1))
 
-tile1 = world.TileType(1,"grass")
-tile2 = world.TileType(2,"snow")
-
-print(tile1.get_identifier())
-print(tile2.get_identifier())
-
-ter_array = world.WorldArea(12,10)
-
-for j in range(10):
-  for i in range(12):
-    number = random.randint(0,2)
-
-    if number == 0:
-      ter_array.set_tile(i,j,tile1,0,None)
-    elif number == 1:
-      ter_array.set_tile(i,j,tile2,0,None)
-
-#ter_array.set_tile(2,1,tile1,0)
-#ter_array.set_tile(3,1,tile1,0)
-#ter_array.set_tile(1,2,tile1,0)
-#ter_array.set_tile(2,2,tile1,0)
-#ter_array.set_tile(3,2,tile1,0)
-#ter_array.set_tile(4,2,tile2,0)
-#ter_array.set_tile(2,3,tile1,0)
-#ter_array.set_tile(3,3,tile2,0)
-#ter_array.set_tile(4,3,tile2,0)
-#ter_array.set_tile(2,4,tile1,0)
-#ter_array.set_tile(4,4,tile2,0)
-#ter_array.set_tile(4,5,tile2,0)
-#ter_array.set_tile(1,6,tile2,0)
-#ter_array.set_tile(2,6,tile2,0)
-#ter_array.set_tile(4,6,tile2,0)
-
-ter = myyy.make_terrain_image(ter_array)
+w = world.World(general.RESOURCE_PATH + "/world")
+print(w)
+w.set_active_area(194,232,20,18)
+ter = myyy.make_terrain_image(w.world_area)
 
 i = 0
 
@@ -376,6 +345,7 @@ while not done:
   screen.blit(imgs[(frame + 3) % 4],(310,120))
   screen.blit(imgs[frame],(200,190))
 
-  screen.blit(ter,(300,200))
+  screen.blit(ter,(300,100))
 
   pygame.display.flip()
+

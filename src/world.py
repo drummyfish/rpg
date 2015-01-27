@@ -98,7 +98,10 @@ class WorldArea:
 
   @property
   def height(self):
-    return len(self.terrain_array[0])
+    if self.width == 0:
+      return 0
+    else:
+      return len(self.terrain_array[0])
 
   ## Sets the tile at given position. If the position is outside the
   #  terrain, nothing happens.
@@ -187,7 +190,7 @@ class World:
 
           split_line = line2.split()
 
-          self.tile_types.append(TileType(int(split_line[2]),split_line[1],split_line[5] == "T",int(split_line[3]),split_line[4] == "T",split_line[6] == "T",split_line[7] == "T"))
+          self.tile_types[int(split_line[0])] = TileType(int(split_line[2]),split_line[1],split_line[5] == "T",int(split_line[3]),split_line[4] == "T",split_line[6] == "T",split_line[7] == "T")
 
       if line[:8] == "terrain:":       # load world size
         self.world_width = int(world_file.readline())
@@ -260,7 +263,7 @@ class World:
     ## WorldArea object reference
     self.world_area = None
     ## all world tile types loaded from the world file
-    self.tile_types = []
+    self.tile_types = {}
     ## world width in tiles
     self.world_width = 0
     ## world height in tiles
@@ -314,7 +317,3 @@ class World:
     result += str(self.world_area)
 
     return result
-
-w = World(general.RESOURCE_PATH + "/world")
-w.set_active_area(3,2,3,2)
-print(w)
