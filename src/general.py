@@ -22,6 +22,8 @@ ANIMATION_IDLE_RIGHT = 101
 ANIMATION_IDLE_DOWN  = 102
 ANIMATION_IDLE_LEFT  = 103
 
+
+
 def saturate(value, minimum, maximum):
   if value < minimum:
     return minimum

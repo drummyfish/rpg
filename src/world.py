@@ -212,7 +212,7 @@ class World:
     world_file = open(self.filename,'r')
     end_it = False
 
-    self.world_area = WorldArea(self.active_area[2],self.active_area[3])
+    self.world_area = WorldArea(self._active_area[2],self._active_area[3])
 
     for line in world_file:
 
@@ -222,13 +222,13 @@ class World:
 
         counter = 0
 
-        while counter < self.active_area[1]:
+        while counter < self._active_area[1]:
           world_file.readline()
           counter += 1
 
         y = 0
 
-        while counter < self.active_area[1] + self.active_area[3]:
+        while counter < self._active_area[1] + self._active_area[3]:
           line2 = world_file.readline()
 
           if line2[:3] == "end":
@@ -237,9 +237,9 @@ class World:
 
           terrain_line = line2.split()
 
-          for x in range(0,self.active_area[2]):
+          for x in range(0,self._active_area[2]):
             try:
-              self.world_area.set_tile(x,y,self.tile_types[int(terrain_line[(self.active_area[0] + x) * 2])],int(terrain_line[(self.active_area[0] + x) * 2 + 1]),None)
+              self.world_area.set_tile(x,y,self.tile_types[int(terrain_line[(self._active_area[0] + x) * 2])],int(terrain_line[(self._active_area[0] + x) * 2 + 1]),None)
             except Exception:
               pass
 
@@ -259,7 +259,7 @@ class World:
     ## contains the name of the world file for which the object is a proxy
     self.filename = ""
     ## active world (player's close) area in format (x,y,width,height) in tiles
-    self.active_area = (0, 0, 0, 0)
+    self._active_area = (0, 0, 0, 0)
     ## WorldArea object reference
     self.world_area = None
     ## all world tile types loaded from the world file
@@ -288,18 +288,34 @@ class World:
   def height(self):
     return self.world_height
 
-  ## Sets the active area of the world (the player's close area which
+  ## The active area of the world (the player's close area which
   #  can then be handled in a detailed way).
-  #
-  #  @param x integer x coordinate of the active area in world
-  #         coordinates
-  #  @param y integer y coordinate of the active area in world
-  #         coordinates
-  #  @param width width of the active area in tiles
-  #  @param height height of the active area in tiles
 
-  def set_active_area(self, x, y, width, height):
-    self.active_area = (x, y, width, height)
+  @property
+  def active_area(self):
+    return self._active_area
+
+  @active_area.setter
+  def active_area(self,value):
+    if value[0] < 0:
+      diff = value[2] + value[0]
+      x = 0
+      width = int(value[2] - diff)
+    else:
+      x = value[0]
+      width = value[2]
+
+    if value[1] < 0:
+      diff = value[3] + value[1]
+      y = 0
+      height = int(value[3] - diff)
+    else:
+      y = value[1]
+      height = value[3]
+
+    adjusted_value = (x,y,width,height)
+
+    self._active_area = adjusted_value
     self.__load_active_terrain()
 
   def __str__(self):
