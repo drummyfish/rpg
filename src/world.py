@@ -81,9 +81,10 @@ class WorldArea:
     ## the terrain array, it's format is [x][y][tiletype,variant,object_list]:
     self.terrain_array = numpy.zeros((width,height),dtype=object)
 
-    for j in range(len(self.terrain_array[0])):
-      for i in range(len(self.terrain_array)):
-        self.terrain_array[i,j] = numpy.array([None,0,None])
+    if (len(self.terrain_array) != 0):
+      for j in range(len(self.terrain_array[0])):
+        for i in range(len(self.terrain_array)):
+          self.terrain_array[i,j] = numpy.array([None,0,None])
 
     #self.terrain_array = [[[None,0,None] for i in range(height)] for j in range(width)]
 
@@ -116,33 +117,34 @@ class WorldArea:
   #          terrain array, closest tile type is returned
 
   def get_tile_type(self, x, y):
-    return self.terrain_array[general.saturate(x,0,self.get_width() - 1)][general.saturate(y,0,self.get_height() - 1)][0]
+    return self.terrain_array[general.saturate(x,0,self.width - 1)][general.saturate(y,0,self.height - 1)][0]
 
   ## Same as get_tile_type, just returns the tile variant.
 
   def get_tile_variant(self, x, y):
-    return self.terrain_array[general.saturate(x,0,self.get_width() - 1)][general.saturate(y,0,self.get_height() - 1)][1]
+    return self.terrain_array[general.saturate(x,0,self.width - 1)][general.saturate(y,0,self.height - 1)][1]
 
   ## Same as get_tile_type, just returns the object list.
 
   def get_object_list(self, x, y):
-    return self.terrain_array[general.saturate(x,0,self.get_width() - 1)][general.saturate(y,0,self.get_height() - 1)][2]
+    return self.terrain_array[general.saturate(x,0,self.width - 1)][general.saturate(y,0,self.height - 1)][2]
 
-  ## Debug purpose method.
+  def __str__(self):
+    result = ""
 
-  def print_out(self):
-    print("--------")
+    for j in range(self.height):
+      for i in range(self.width):
+        tile_type = self.get_tile_type(i,j)
+        tile_variant = self.get_tile_variant(i,j)
 
-    for j in range(ter_ar.get_height()):
-      for i in range(ter_ar.get_width()):
-        tile = self.get_tile_type(i,j)
-        variation = self.get_tile_variant(i,j)
-
-        if tile == None:
-          sys.stdout.write("N " + str(variation) + "    ")
+        if tile_type == None:
+          result += "N (" + str(tile_variant) + ") "
         else:
-          sys.stdout.write(tile.name + " " + str(variation) + "    ")
-      print("")
+          result += str(tile_type.identifier) + " (" + str(tile_variant) + ") "
+
+      result += "\n"
+
+    return result
 
 #=======================================================================
 
@@ -185,17 +187,68 @@ class World:
 
           split_line = line2.split()
 
-          print(split_line)
-
           self.tile_types.append(TileType(int(split_line[2]),split_line[1],split_line[5] == "T",int(split_line[3]),split_line[4] == "T",split_line[6] == "T",split_line[7] == "T"))
 
+      if line[:8] == "terrain:":       # load world size
+        self.world_width = int(world_file.readline())
+        self.world_height = int(world_file.readline())
+
+        while True:
+          line2 = world_file.readline()
+
+          if line2[:3] == "end":
+            break
+
+        # TODO LOAD TERRAAAAAAAAAIN
+
     world_file.close()
-    return
 
   ## Private method, loads the active terrain area from the world file.
 
   def __load_active_terrain(self):
-    return
+    world_file = open(self.filename,'r')
+    end_it = False
+
+    self.world_area = WorldArea(self.active_area[2],self.active_area[3])
+
+    for line in world_file:
+
+      if line[:8] == "terrain:":     # load tiles
+        world_file.readline()        # skip the width and height lines
+        world_file.readline()
+
+        counter = 0
+
+        while counter < self.active_area[1]:
+          world_file.readline()
+          counter += 1
+
+        y = 0
+
+        while counter < self.active_area[1] + self.active_area[3]:
+          line2 = world_file.readline()
+
+          if line2[:3] == "end":
+            end_it = True
+            break
+
+          terrain_line = line2.split()
+
+          for x in range(0,self.active_area[2]):
+            try:
+              self.world_area.set_tile(x,y,self.tile_types[int(terrain_line[(self.active_area[0] + x) * 2])],int(terrain_line[(self.active_area[0] + x) * 2 + 1]),None)
+            except Exception:
+              pass
+
+          counter += 1
+          y += 1
+
+        # TODO LOAD TERRAAAAAAAAAIN
+
+      if end_it:
+        break
+
+    world_file.close()
 
   ## Private method, initialises the default attribute values
 
@@ -246,8 +299,22 @@ class World:
     self.active_area = (x, y, width, height)
     self.__load_active_terrain()
 
-t1 = TileType()
-print(t1)
+  def __str__(self):
+    result = ""
+    result += "world width: "
+    result += str(self.world_width)
+    result += "\nworld height: "
+    result += str(self.world_height)
+    result += "\ntiles:\n"
+
+    for tile in self.tile_types:
+      result += str(tile) + "\n"
+
+    result += "\nactive area:\n"
+    result += str(self.world_area)
+
+    return result
 
 w = World(general.RESOURCE_PATH + "/world")
-
+w.set_active_area(3,2,3,2)
+print(w)
