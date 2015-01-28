@@ -214,6 +214,9 @@ class World:
 
     self.world_area = WorldArea(self._active_area[2],self._active_area[3])
 
+    helper_width = self._active_area[2]
+    helper_height = self._active_area[3]
+
     for line in world_file:
 
       if line[:8] == "terrain:":     # load tiles
@@ -228,7 +231,7 @@ class World:
 
         y = 0
 
-        while counter < self._active_area[1] + self._active_area[3]:
+        while counter < self._active_area[1] + helper_height:
           line2 = world_file.readline()
 
           if line2[:3] == "end":
@@ -237,7 +240,7 @@ class World:
 
           terrain_line = line2.split()
 
-          for x in range(0,self._active_area[2]):
+          for x in range(0,helper_width):
             try:
               self.world_area.set_tile(x,y,self.tile_types[int(terrain_line[(self._active_area[0] + x) * 2])],int(terrain_line[(self._active_area[0] + x) * 2 + 1]),None)
             except Exception:
@@ -289,7 +292,9 @@ class World:
     return self.world_height
 
   ## The active area of the world (the player's close area which
-  #  can then be handled in a detailed way).
+  #  can then be handled in a detailed way). It is a tuple in fomrmat:
+  #  (x,y,width,height) where the rectangle must be inside the world
+  #  map.
 
   @property
   def active_area(self):
@@ -297,25 +302,7 @@ class World:
 
   @active_area.setter
   def active_area(self,value):
-    if value[0] < 0:
-      diff = value[2] + value[0]
-      x = 0
-      width = int(value[2] - diff)
-    else:
-      x = value[0]
-      width = value[2]
-
-    if value[1] < 0:
-      diff = value[3] + value[1]
-      y = 0
-      height = int(value[3] - diff)
-    else:
-      y = value[1]
-      height = value[3]
-
-    adjusted_value = (x,y,width,height)
-
-    self._active_area = adjusted_value
+    self._active_area = value
     self.__load_active_terrain()
 
   def __str__(self):

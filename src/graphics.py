@@ -295,8 +295,6 @@ class ImageCompositor:
 
             result_image.blit(helper_image,(i * general.TILE_WIDTH + general.SUBTILE_WIDTH,j * general.TILE_HEIGHT + general.TILE_HEIGHT))
 
-    pygame.draw.rect(result_image,(0,0,0,255),pygame.Rect(0,0,result_image.get_width(),result_image.get_height()),1)
-
     return result_image
 
   #---------------------------------------------------------------------
