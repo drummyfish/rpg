@@ -51,6 +51,25 @@ def image_to_map_string(image_surface, color_map, one_line = False):
   return result
 
 img = pygame.image.load("test.bmp")
-c_map = [(pygame.Color(0,255,0),0,0),(pygame.Color(0,0,255),1,0),(pygame.Color(0,128,0),3,0),(pygame.Color(128,64,0),2,0)]
+c_map = [
+          (pygame.Color(0,255,0),0,0),
+          (pygame.Color(0,128,0),0,1),
+          (pygame.Color(0,64,0),0,2),
+          (pygame.Color(0,32,0),0,3),
+          (pygame.Color(255,0,0),2,0),
+          (pygame.Color(128,0,0),2,1),
+          (pygame.Color(64,0,0),2,2),
+          (pygame.Color(32,0,0),2,3),
+          (pygame.Color(255,255,255),3,0),
+          (pygame.Color(128,128,128),3,1),
+          (pygame.Color(64,64,64),3,2),
+          (pygame.Color(32,32,32),3,3),
+          (pygame.Color(0,255,255),4,0),
+          (pygame.Color(0,128,128),4,1),
+          (pygame.Color(0,64,64),4,2),
+          (pygame.Color(0,32,32),4,3),
+          (pygame.Color(0,0,255),1,0),
+          (pygame.Color(128,64,0),2,0)
+        ]
 
 print(image_to_map_string(img,c_map))
