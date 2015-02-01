@@ -11,6 +11,67 @@ import numpy
 
 #=======================================================================
 
+## Represents an abstract RPG object class.
+#
+#  An RPG object class is a template for concrete RPG objects. This
+#  includes for example an item template, whereas the concrete item
+#  instance in the world is an RPG object instance.
+
+class RPGObjectClass:
+  def __init__(self):
+    return
+
+#=======================================================================
+
+## Represents an abstract RPG object instance.
+#
+#  An RPG object instance is an instance of an RPG object class, i.e.
+#  a concrete existing object, not a template for it.
+
+class RPGObjectInstance:
+  def __init__(self):
+    return
+
+#=======================================================================
+
+## Represents an abstract instance placed in the world.
+#
+#  That is an instance that is placed in the game world, in an exterior
+#  or an interior, such as a tree, an item placed on ground, a cow etc.
+#  This doesn't include an item in inventory or a spell as they aren't
+#  placed directly in the world.
+
+class WorldInstance:
+  def __init_attributes(self):
+    return
+
+  def __init__(self):
+    return
+
+#=======================================================================
+
+## Represents a world object that is placed at given tile of the
+#  terrain.
+#
+#  That means that its position consists of two integers.
+
+class TileWorldInstance(WorldInstance):
+  def __init__(self):
+    return
+
+#=======================================================================
+
+## Represents a world object that is placed at given precise
+#  position in the world.
+#
+#  That means its position consists of two floating-point numbers.
+
+class FloatingWorldInstance(WorldInstance):
+  def __init__(self):
+    return
+
+#=======================================================================
+
 ## Represents a game tile type. I.e. not a single tile but rather
 #  a type of tile, such as grass, road etc.
 

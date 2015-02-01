@@ -14,7 +14,11 @@ data_lines is a variable number of lines of definitions.
 
 The sections are:
 
+-----------------
+
 npcs - NPC definitions
+
+-----------------
 
 tiles - world tiles definition, the data lines look like this:
   id_int name_string priority_int variants_int animated_bool steppable_bool flyable_bool swimmable_bool
@@ -26,17 +30,66 @@ tiles - world tiles definition, the data lines look like this:
   is steppable (T or F) and flyable says if the tile can be flight over (T or F),
   similarly swimmable_bool
 
+-----------------
+
 terrain - world terrain definition, the first data line is width, the second one is
   height and the the following lines represent lines of the terrain, which consist
   of tile_id variant alternating numbers
+
+-----------------
 
 interiors - defines interiors, each data line looks like this:
   id_int name_string width_int height_int tile_data
   tile_data is the same as the terrain tile data
 
-items - item definitions
+-----------------
 
-objects - object definitions
+items - item RPG class definitions, an item is an instance of one of the following classes:
+  - equipable: subclasses:
+    - armor:
+      - head:
+      - chest:
+    - weapon: subclasses:
+      - sharp: swords, daggers, axes etc.
+      - blunt:
+      - magical: wands, staves etc.
+      - shooting: bows, crossbows, guns etc.
+
+  - usable: can be used once, then the item is destroyed (e.q. potions, bombs, ...)
+  - other: quest items, miscelaneous objects etc.
+
+  item data_line format is:
+
+  - for armor:
+    class_str name_str description_str ???? 
+  - for weapon:
+    class_str name_str description_str ????     
+  - for usable:
+    class_str name_str description_str ????
+  - for other:
+    class_str name_str description_str
+
+-----------------
+
+npcs - npc RPG class definitions
+
+-----------------
+
+spells - spell RPG class definitions
+
+-----------------
+
+props - props definitions, these include various stuff such as houses, trees, flowers etc. the data_line format is:
+  name_str shadow_str  
+
+-----------------
+
+instances - RPG instance (concrete objects that are placed on game map) definitions. RPG instance is an instance
+  of one of following classes:
+  - NPC
+  - item
+  - prop
+  - spawner
 
 ======================================
 EXAMPLE:

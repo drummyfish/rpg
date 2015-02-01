@@ -5,10 +5,10 @@
 from enum import Enum
 import pygame
 
-TILE_WIDTH = 34                   # map tile width
-TILE_HEIGHT = 28                  # map tile height
-SUBTILE_WIDTH = 17                # map subtile (corners) width
-SUBTILE_HEIGHT = 14               # map subtile (corners) height
+TILE_WIDTH = 68                   # map tile width
+TILE_HEIGHT = 56                  # map tile height
+SUBTILE_WIDTH = TILE_WIDTH / 2    # map subtile (corners) width
+SUBTILE_HEIGHT = TILE_HEIGHT / 2  # map subtile (corners) height
 
 RESOURCE_PATH = "../resources"
 

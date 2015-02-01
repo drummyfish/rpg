@@ -1,0 +1,12 @@
+
+===========================================
+todo:
+
+- Windows installer (WinPython + Inno Setup)
+- weather effects
+- continuous colission detection moving floating objects (taking advantage of world grid as space index)
+
+===========================================
+done:
+
+- terrain rendering

@@ -1,4 +1,7 @@
 doc/*
+src/*.bmp
+src/*.txt
+old
 
 #################
 ## Eclipse
