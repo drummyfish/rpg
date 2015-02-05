@@ -16,6 +16,9 @@ screen = pygame.display.set_mode((800,480))
 done = False
 
 w = world.World(general.RESOURCE_PATH + "/world")
+
+print(w)
+
 renderer = graphics.WorldRenderer(w)
 
 renderer.view_top_left = (20,50)

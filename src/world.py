@@ -72,8 +72,8 @@ class FloatingWorldInstance(WorldInstance):
 
 #=======================================================================
 
-## Represents a game tile type. I.e. not a single tile but rather
-#  a type of tile, such as grass, road etc.
+## Represents a game tile type (RPG class). I.e. not a single tile but
+#  rather a type of tile, such as grass, road etc.
 
 class TileType:
   last_identifier = 0
@@ -129,6 +129,53 @@ class TileType:
 
   def __str__(self):
     return "Tile: '" + self.name + "' (" + str(self.identifier) + "), prior.: " + str(self.priority) + ", step.: " + str(self.steppable) + ", fly.: " + str(self.flyable) + ", swim.: " + str(self.swimmable)
+
+#=======================================================================
+
+## Represents a prop type (RPG class), not a concrete prop (RPG
+#  instance).
+
+class PropType:
+  ## Private method, initialises the default attribute values
+
+  def __init_attributes(self):
+    ## prop name, is used to construct a filename of the prop image
+    self.name = ""
+    ## an id of the shadow for the prop, negative value means no shadow
+    self.shadow = -1
+    ## prop width in tiles
+    self.width = 0
+    ## prop height in tiles
+    self.height = 0
+    ## whether the prop can be walked on
+    self.walkable = False
+    ## whether the prop can be flown over
+    self.flyable = True
+    ## whether the prop can be swimmed at
+    self.swimmable = False
+    ## number of animation frames
+    self.frames = 1
+    ## animation speed multiplier
+    self.animation_speed = 1.0
+    ## if the prop is drawn in lower or upper layer
+    self.draw_in_foreground = True
+    ## 2D array of boolean values representing the prop mask that says
+    #  which tiles of the width x height rectangle the prop
+    #  actualy occupies
+    self.mask = None
+
+  def __str__(self):
+    result = "prop '" + self.name + "' :\n"
+    result += "  shadow id = " + str(self.shadow) + "\n"
+    result += "  size = " + str(self.width) + " x " + str(self.height) + "\n"
+    result += "  walk/fly/swim = " + str(int(self.walkable)) + str(int(self.flyable)) + str(int(self.swimmable)) + "\n"
+    result += "  animation frames = " + str(self.frames) + "\n"
+    result += "  animation speed = " + str(self.animation_speed) + "\n"
+    result += "  foreground = " + str(self.draw_in_foreground) + "\n"
+    return result
+
+  def __init__(self):
+    self.__init_attributes()
 
 #=======================================================================
 
@@ -242,6 +289,41 @@ class World:
 
     for line in world_file:
 
+      if line[:8] == "shadows:":     # load shadows
+        while True:
+          line2 = world_file.readline()
+
+          if line2[:3] == "end":
+            break
+
+          split_line = line2.split()
+
+          self.shadows[int(split_line[0])] = split_line[1]
+
+      if line[:6] == "props:":       # load props
+        while True:
+          line2 = world_file.readline()
+
+          if line2[:3] == "end":
+            break
+
+          split_line = line2.split()
+
+          prop_type = PropType()
+          prop_type.name = split_line[1]
+          prop_type.shadow = int(split_line[2])
+          prop_type.width = int(split_line[3])
+          prop_type.height = int(split_line[4])
+          prop_type.walkable = split_line[5] == "T"
+          prop_type.swimmable = split_line[6] == "T"
+          prop_type.flyable = split_line[7] == "T"
+          prop_type.frames = int(split_line[8])
+          prop_type.animation_speed = float(split_line[9])
+          prop_type.draw_in_front = split_line[10] == "T"
+
+          self.props[int(split_line[0])] = prop_type
+
+
       if line[:6] == "tiles:":       # load tiles
         while True:
           line2 = world_file.readline()
@@ -326,8 +408,12 @@ class World:
     self._active_area = (0, 0, 0, 0)
     ## WorldArea object reference
     self.world_area = None
-    ## all world tile types loaded from the world file
+    ## all world tile types loaded from the world file, the key is the tile id, the items are TileType objects
     self.tile_types = {}
+    ## all shadows loaded from the world file, the key is the tile id, the items are name strings
+    self.shadows = {}
+    ## all props loaded from the world file, the key is the prop id, the items are PropType objects
+    self.props = {}
     ## world width in tiles
     self.world_width = 0
     ## world height in tiles
@@ -375,9 +461,16 @@ class World:
     result += "\ntiles:\n"
 
     for tile in self.tile_types:
-      result += str(tile) + "\n"
+      result += str(self.tile_types[tile]) + "\n"
+
+    result += "\nprops:\n"
+
+    for prop in self.props:
+      result += str(self.props[prop])
 
     result += "\nactive area:\n"
     result += str(self.world_area)
+
+    result += "\nshadows:" + str(self.shadows)
 
     return result

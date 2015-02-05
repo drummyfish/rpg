@@ -1,99 +1,249 @@
-The deafault world will be in resources directory, the save files (modified
-world files) will be in separate save folder.
+=================== WORLD FILE FORMAT SPECIFICAtion ====================
 
-There will be sections, like terrains, npcs, tiles etc. Each sections looks like this:
+BRIEF DESCRIPTION
 
-section_name
+The world file holds an information about the whole game world,
+including the terrain, game objects, NPCs, items, player state etc. It
+is also used as a save file - each saved game is saved in one save file
+that contains the state of the whole world.
+
+------------------------------------------------------------------------
+
+DEFINITIONS
+
+The world file is saved in text format. The file consists of so called
+sections. Each section is used to specify one kind of data. The order
+of the sections is important and is given in a chapter below. A section
+is defined as:
+
+section_name:
 data_lines
 end
 
-These sections can be in any order and some of them can even be missing but there must
-not be one sections more than once.
+where section_name is the name (type) od the section, end is a keyword
+marking the section end and data_lines is a variable number of lines
+whose format depends on the type of the section. These lines are called
+data lines and they contains concrete data of the section.
 
-data_lines is a variable number of lines of definitions.
+The file format uses specific data types that are:
 
-The sections are:
+- integer: integer value (Python-like)
+- string: string value that is NOT enclosed within quotation marks
+- float: floating point value (Python-like)
+- bool: boolean value that can be either T (true) or F (false)
 
------------------
+Finally there are a few more terms to be defined. These are:
 
-npcs - NPC definitions
+- RPG class: Refers to a class of objects in RPG world. Furthermore
+  there are subclasses such as RPG item class, RPG NPC class etc. Non
+  of the term mentioned is NOT to be confused with programming language
+  classes or RPG character classes such as warrior, mage etc. For
+  example, a healing potion +20 HP is an RPG class - concrete
+  healing potions +20 HP that are placed in the game world are RPG
+  instances of the RPG class mentioned.
 
------------------
+- RPG instance: concrete instance (occurence) of RPG class that is
+  placed in the game world. Again, these are NOT programming
+  language class instances.
 
-tiles - world tiles definition, the data lines look like this:
-  id_int name_string priority_int variants_int animated_bool steppable_bool flyable_bool swimmable_bool
+------------------------------------------------------------------------
 
-  id_int is unique integer id, name_string is the tile name, priority_int is integer
-  priority which affects the tile overlapping, variants_int is the number of tile
-  variants (if the tile is not animated) or number of frames (if the tile is animated),
-  animated_bool says if the tile is animated (T or F), steppable_bool says if the tile
-  is steppable (T or F) and flyable says if the tile can be flight over (T or F),
-  similarly swimmable_bool
+SECTIONS
 
------------------
+The following chapter describes individual sections that the world file
+can contain. The section order must be as follows:
 
-terrain - world terrain definition, the first data line is width, the second one is
-  height and the the following lines represent lines of the terrain, which consist
-  of tile_id variant alternating numbers
+- shadows
+- tiles
+- npcs
+- props
+- items
+- spells
+- terrain
+- interiors
+- instances
 
------------------
+----------------------
 
-interiors - defines interiors, each data line looks like this:
-  id_int name_string width_int height_int tile_data
-  tile_data is the same as the terrain tile data
+npcs
 
------------------
+  Defines RPG NPC classes (not RPG NPC instances, see above).
 
-items - item RPG class definitions, an item is an instance of one of the following classes:
-  - equipable: subclasses:
-    - armor:
-      - head:
-      - chest:
-    - weapon: subclasses:
-      - sharp: swords, daggers, axes etc.
-      - blunt:
-      - magical: wands, staves etc.
-      - shooting: bows, crossbows, guns etc.
+data line format:
 
-  - usable: can be used once, then the item is destroyed (e.q. potions, bombs, ...)
-  - other: quest items, miscelaneous objects etc.
+----------------------
 
-  item data_line format is:
+tiles
 
-  - for armor:
-    class_str name_str description_str ???? 
-  - for weapon:
-    class_str name_str description_str ????     
-  - for usable:
-    class_str name_str description_str ????
-  - for other:
-    class_str name_str description_str
+  Defines world tiles that the game world terrain (and interiors)
+  consist of, such as grass, mud, snow etc.
 
------------------
+data line format:
 
-npcs - npc RPG class definitions
+  id name priority variants animated steppable flyable swimmable
 
------------------
+  id        integer     unique integer tile identifier
+  name      string      tile name that will be used to identify the
+                        image file in resources, the game will be
+                        searching for file named "tile_" + name +
+                        ".png" in the resources folder
+  priority  integer     determines how the tiles will overlap on
+                        borders, the tile with higher priority will
+                        overlap the lower priority tile, this is ignored
+                        for animated tiles (as they cannot have borders)
+  variants  integer     says how many variants (for non-animated) or
+                        animation frames (for animated) there are, this
+                        must be a number in range <1,4>
+  animated  boolean     says whether the tile is animated, note that
+                        animated tiles cannot have borders and should
+                        be overlapped by another tile on its border
+  steppable boolean     says whether the tile can be stepped onto
+  flyable   boolean     says whether the tile can be flown over
+  swimmable boolean     says whether the tile can be swimmed on
 
-spells - spell RPG class definitions
+----------------------
 
------------------
+shadows
 
-props - props definitions, these include various stuff such as houses, trees, flowers etc. the data_line format is:
-  name_str shadow_str  
+  Defines shadows that RPG instances, such as props or NPCs, can have.
 
------------------
+data line format:
 
-instances - RPG instance (concrete objects that are placed on game map) definitions. RPG instance is an instance
-  of one of following classes:
-  - NPC
-  - item
-  - prop
-  - spawner
+  id name
 
-======================================
-EXAMPLE:
-======================================
+  id        integer     unique integer shadow identifier
+  name      string      name that will be used to identify the
+                        filename of the shadow image in resources
+                        folder, the game will be looking for file named
+                        "shadow_" + shadow + ".png" in the resource
+                        folder
+----------------------
+
+props
+
+  Defines RPG prop classes (not RPG prop instances, see above). These
+  are things that are placed in the world (exterior or interior), they
+  occupy space (so they can block way) and can potentially be interacted
+  with, such as trees, levers, carpets, rocks, houses etc.
+
+data line format:
+
+  id name shadow width height walkable swimmable flyable frames speed draw mask
+
+  id        integer     unique integer prop identifier
+  name      string      tile name that will be used to identify the
+                        image file in resources, the game will be
+                        searching for file named "prop_" + name +
+                        ".png" in the resources folder
+  shadow    integer     if a special '!' symbol is given, no shadow is
+                        used
+  width     integer     prop width in tiles
+  height    integer     prop height in tiles
+  walkable  boolean     says if the area occupied by the prop can be
+                        walked onto
+  swimmable boolean     says if the area occupied by the prop can be
+                        swimmed on
+  flyable   boolean     says if the area occupied by the prop can be
+                        flown over
+  frames    integer     says how many animation frames does the prop
+                        have, maximum is 10, minimum is 0 (non-animated)
+  speed     float       animation speed multiplier, 1.0 is normal speed,
+                        ignored for non-animated props
+  draw      bool        says whether to draw the prop over other things
+                        (T, such as a house) or under things
+                        (F, such as a carpet on the ground)
+  mask      ...         specifies the mask for the prop that says
+                        which tiles of the rectangle specified by
+                        width and height are actually occupied by the
+                        prop, it is a sequence of integers separated by
+                        spaced, which represent the lines of tiles
+                        (left to right, top to bottom), 1 means the tile
+                        is occupied, 0 means the tile is not occupied,
+                        for example for a prop of size 2 x 2 the mask
+                        could be: 0 1 1 1
+----------------------
+
+interactive
+
+  Defines interactive object RPG classes, these are things that can be
+  interacted with such as levers, chests etc.
+
+----------------------
+
+terrain
+
+  Defines the world exterior terrain, i.e. 2D grid of tiles.
+
+data line format:
+  The first data line is the world exterior width in tiles (integer).
+  The second data line is the world exterior height in tiles (integer).
+  Then the terrain data lines follow. Each terrain data line represents
+  one line of the world 2D tile array and it contains alternating
+  integer values (separated by spaces) representing a tile id and a tile
+  variant number. So for example if the world width was 2, the line
+  would consist of 4 numbers that could look like this: 0 1 2 1 - this
+  would mean the first tile is a tile with id 0 and its wariant is 1,
+  the second tile is a tile with id 2 and its variant is 1.
+
+----------------------
+
+interiors
+
+  Defines interiors, i.e. house interiors, caves etc. The interior is,
+  similarly to world exterior, a 2D array of tiles.
+
+data line format:
+
+  id name width height tiles
+
+  id        integer     unique integer interior identifier
+  name      string      interior name to be displayed in the game
+  width     integer     interior tile array width in tiles
+  height    integer     interior tile array height in tiles
+  tiles     ...         an alternating sequence of integers, this is
+                        the same as with world exterior tile array
+                        definition (tile id and variant numbers), the
+                        only difference is that the tile array lines
+                        are not separated by newlines but just with
+                        spaces so they stay in the interior data line.
+----------------------
+
+items
+
+  Defines RPG item classes (not RPG item instances, see above).
+
+data line format:
+
+----------------------
+
+spells
+
+  Defines spells.
+
+data line format:
+
+----------------------
+
+instances
+
+  Defines RPG instances (see above).
+
+data line format:
+
+  - for props:
+    prop id x y
+
+    prop                  this is always "prop" string
+    id        integer     prop id
+    x         integer     prop bottom left corner x world coordinate in
+                          tiles
+    y         integer     prop bottom left corner y world coordinate in
+                          tiles
+
+------------------------------------------------------------------------
+
+EXAMPLE
+
 
 
 items:
