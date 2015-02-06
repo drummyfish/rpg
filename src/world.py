@@ -136,7 +136,7 @@ class TileType:
 #  instance).
 
 class PropType:
-  ## Private method, initialises the default attribute values
+  ## Private method, initialises the default attribute values.
 
   def __init_attributes(self):
     ## prop name, is used to construct a filename of the prop image
@@ -172,7 +172,37 @@ class PropType:
     result += "  animation frames = " + str(self.frames) + "\n"
     result += "  animation speed = " + str(self.animation_speed) + "\n"
     result += "  foreground = " + str(self.draw_in_foreground) + "\n"
+    result += "  mask = " + str(self.mask)
     return result
+
+  def __init__(self):
+    self.__init_attributes()
+
+#=======================================================================
+
+## Represents a prop RPG instance, i.e. a concrete prop placed in the
+#  world.
+
+class PropInstance:
+  ## Private method, initialises the default attribute values.
+
+  def __init_attributes(self):
+    ## references the prop type (RPG class)
+    self.prop_type = None
+    ## position of the lower bottom corner of the prop in game tiles
+    self.position = (0,0)
+
+  def __str__(self):
+    result = "prop instance: class = " + self.prop_type.name + ", position = [" + str(self.position[0]) + "," + str(self.position[1]) + "]\n"
+    return result
+
+  @property
+  def width(self):
+    return self.prop_type.width
+
+  @property
+  def height(self):
+    return self.prop_type.height
 
   def __init__(self):
     self.__init_attributes()
@@ -193,8 +223,6 @@ class WorldArea:
       for j in range(len(self.terrain_array[0])):
         for i in range(len(self.terrain_array)):
           self.terrain_array[i,j] = numpy.array([None,0,None])
-
-    #self.terrain_array = [[[None,0,None] for i in range(height)] for j in range(width)]
 
   ## the area width in tiles
 
@@ -289,22 +317,38 @@ class World:
 
     for line in world_file:
 
-      if line[:8] == "shadows:":     # load shadows
+      #-------------------------
+      if general.begins_with(line,"shadows:"):            # load shadows
         while True:
           line2 = world_file.readline()
 
-          if line2[:3] == "end":
+          if general.begins_with(line2,"end"):
             break
 
           split_line = line2.split()
 
           self.shadows[int(split_line[0])] = split_line[1]
-
-      if line[:6] == "props:":       # load props
+      #-------------------------
+      if general.begins_with(line,"prop_instances:"):     # load prop instances
         while True:
           line2 = world_file.readline()
 
-          if line2[:3] == "end":
+          if general.begins_with(line2,"end"):
+            break
+
+          split_line = line2.split()
+
+          new_instance = PropInstance()
+          new_instance.position = (int(split_line[2]),int(split_line[3]))
+          new_instance.prop_type = self.prop_types[int(split_line[1])]
+
+          self.prop_instances[int(split_line[0])] = new_instance
+      #-------------------------
+      if general.begins_with(line,"prop_classes:"):       # load prop classes
+        while True:
+          line2 = world_file.readline()
+
+          if general.begins_with(line2,"end"):
             break
 
           split_line = line2.split()
@@ -320,34 +364,66 @@ class World:
           prop_type.frames = int(split_line[8])
           prop_type.animation_speed = float(split_line[9])
           prop_type.draw_in_front = split_line[10] == "T"
+          # load the mask:
+          prop_type.mask = numpy.zeros((prop_type.width,prop_type.height),dtype=object)
 
-          self.props[int(split_line[0])] = prop_type
+          helper_position = 2 # the field where the mask sequence begins
 
+          for j in range(prop_type.height):
+            for i in range(prop_type.width):
+              prop_type.mask[i,j] = int(split_line[helper_position]) == 1
+              helper_position += 1
 
-      if line[:6] == "tiles:":       # load tiles
+          self.prop_types[int(split_line[0])] = prop_type
+      #-------------------------
+      if general.begins_with(line,"tiles:"):              # load tiles
         while True:
           line2 = world_file.readline()
 
-          if line2[:3] == "end":
+          if general.begins_with(line2,"end"):
             break
 
           split_line = line2.split()
 
           self.tile_types[int(split_line[0])] = TileType(int(split_line[2]),split_line[1],split_line[5] == "T",int(split_line[3]),split_line[4] == "T",split_line[6] == "T",split_line[7] == "T")
-
-      if line[:8] == "terrain:":       # load world size
+      #-------------------------
+      if general.begins_with(line,"terrain:"):            # load world size
         self.world_width = int(world_file.readline())
         self.world_height = int(world_file.readline())
 
         while True:
           line2 = world_file.readline()
 
-          if line2[:3] == "end":
+          if general.begins_with(line2,"end"):
             break
-
-        # TODO LOAD TERRAAAAAAAAAIN
+      #-------------------------
 
     world_file.close()
+
+  ## Gets the props in current active area. This include props that are
+  #  only partially contained within the area.
+  #
+  #  @return list of props in current active area
+
+  def get_active_area_props(self):
+    result = []
+
+    # active area in format (x1, y1, x2, y2):
+    active_area = (self.active_area[0], self.active_area[1], self.active_area[0] + self.active_area[2], self.active_area[1] + self.active_area[3])
+
+    for prop_id in self.prop_instances:
+      prop = self.prop_instances[prop_id]
+
+      # prop position in format (x1, y1, x2, y2):
+      prop_position = (prop.position[0],prop.position[1],prop.position[0] + prop.width,prop.position[1] + prop.height)
+
+      if ( (prop_position[0] > active_area[0] and prop_position[0] < active_area[2]) or
+           (prop_position[2] > active_area[0] and prop_position[2] < active_area[2]) ):
+        if ( (prop_position[1] > active_area[1] and prop_position[1] < active_area[3]) or
+             (prop_position[3] > active_area[1] and prop_position[3] < active_area[3]) ):
+          result.append(prop)
+
+    return result
 
   ## Private method, loads the active terrain area from the world file.
 
@@ -412,8 +488,10 @@ class World:
     self.tile_types = {}
     ## all shadows loaded from the world file, the key is the tile id, the items are name strings
     self.shadows = {}
-    ## all props loaded from the world file, the key is the prop id, the items are PropType objects
-    self.props = {}
+    ## all prop types (RPG classes) loaded from the world file, the key is the prop type id, the items are PropType objects
+    self.prop_types = {}
+    ## all prop instances (RPG instances) loaded from the world file, the key is the prop instance id, the items are PropInstance objects
+    self.prop_instances = {}
     ## world width in tiles
     self.world_width = 0
     ## world height in tiles
@@ -463,10 +541,15 @@ class World:
     for tile in self.tile_types:
       result += str(self.tile_types[tile]) + "\n"
 
-    result += "\nprops:\n"
+    result += "\nprop types:\n"
 
-    for prop in self.props:
-      result += str(self.props[prop])
+    for prop in self.prop_types:
+      result += str(self.prop_types[prop])
+
+    result += "\n\nprop instances:\n"
+
+    for prop in self.prop_instances:
+      result += str(self.prop_instances[prop])
 
     result += "\nactive area:\n"
     result += str(self.world_area)

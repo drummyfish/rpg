@@ -372,6 +372,7 @@ class WorldRenderer:
         (self.world.active_area[0] + self.world.active_area[2] < self.world.width and in_tiles[0] + WorldRenderer.VIEW_WIDTH_TILES >= self.world.active_area[0] + self.world.active_area[2]) or
         (self.world.active_area[1] + self.world.active_area[3] < self.world.height and in_tiles[1] + WorldRenderer.VIEW_HEIGHT_TILES >= self.world.active_area[1] + self.world.active_area[3])):
       print("changing active area")
+      print(self.world.get_active_area_props())
 
       self.__change_active_area()
 

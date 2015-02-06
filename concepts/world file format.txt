@@ -1,4 +1,4 @@
-=================== WORLD FILE FORMAT SPECIFICAtion ====================
+=================== WORLD FILE FORMAT SPECIFICATION ====================
 
 BRIEF DESCRIPTION
 
@@ -53,19 +53,22 @@ SECTIONS
 The following chapter describes individual sections that the world file
 can contain. The section order must be as follows:
 
-- shadows
-- tiles
-- npcs
-- props
-- items
-- spells
 - terrain
 - interiors
+- shadows
+- tiles
+- npc_classes
+- prop_classes
+- item_classes
+- npc_instances
+- prop_instances
+- item_instances
+- spells
 - instances
 
 ----------------------
 
-npcs
+npc_classes
 
   Defines RPG NPC classes (not RPG NPC instances, see above).
 
@@ -119,7 +122,7 @@ data line format:
                         folder
 ----------------------
 
-props
+prop_classes
 
   Defines RPG prop classes (not RPG prop instances, see above). These
   are things that are placed in the world (exterior or interior), they
@@ -161,12 +164,6 @@ data line format:
                         is occupied, 0 means the tile is not occupied,
                         for example for a prop of size 2 x 2 the mask
                         could be: 0 1 1 1
-----------------------
-
-interactive
-
-  Defines interactive object RPG classes, these are things that can be
-  interacted with such as levers, chests etc.
 
 ----------------------
 
@@ -208,7 +205,7 @@ data line format:
                         spaces so they stay in the interior data line.
 ----------------------
 
-items
+item_classes
 
   Defines RPG item classes (not RPG item instances, see above).
 
@@ -224,21 +221,26 @@ data line format:
 
 ----------------------
 
-instances
+- npc_instances
 
-  Defines RPG instances (see above).
+----------------------
+
+- prop_instances
 
 data line format:
 
-  - for props:
-    prop id x y
+  inst_id id x y
 
-    prop                  this is always "prop" string
-    id        integer     prop id
-    x         integer     prop bottom left corner x world coordinate in
-                          tiles
-    y         integer     prop bottom left corner y world coordinate in
-                          tiles
+  inst_id   integer     unique instance id
+  id        integer     prop id
+  x         integer     prop bottom left corner x world coordinate in
+                        tiles
+  y         integer     prop bottom left corner y world coordinate in
+                        tiles
+
+----------------------
+
+- item_instances
 
 ------------------------------------------------------------------------
 
